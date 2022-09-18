@@ -9,8 +9,10 @@ if [ $(id -u) -ne 0 ]; then
     exit 1
 fi
 
+echo "Enter User Information"
+
 # ask for username
-read -p "Enter username: " username
+read -p "🙍 username: " username
 
 # check if username is empty
 if [ -z "$username" ]; then
@@ -25,7 +27,7 @@ if id "$username" >/dev/null 2>&1; then
 fi
 
 # ask for password
-read -s -p "Enter password: " password
+password=`systemd-ask-password "Enter password:"`
 
 # check if password is empty
 if [ -z "$password" ]; then
@@ -33,23 +35,8 @@ if [ -z "$password" ]; then
     exit 1
 fi
 
-# create user
-useradd -m -s /bin/bash $username
-
-# set password
-echo "$username:$password" | chpasswd
-
-# add user to sudo group
-usermod -aG sudo $username
-
-# create .ssh directory
-mkdir /home/$username/.ssh
-
-# change ownership of .ssh directory
-chown $username:$username /home/$username/.ssh
-
 # Ask for public key
-read -p "Enter public key: " publickey
+read -p "🔑 Enter public key (from you local machine): " publickey
 
 # check if public key is empty
 if [ -z "$publickey" ]; then
@@ -57,10 +44,36 @@ if [ -z "$publickey" ]; then
     exit 1
 fi
 
-# add public key to authorized_keys
+# validate public key
+if ! echo "$publickey" | grep -q "ssh-rsa"; then
+    echo "Invalid public key"
+    exit 1
+fi
+
+# create user
+useradd -m -s /bin/bash $username
+
+# # set password
+echo "$username:$password" | chpasswd
+
+# # add user to sudo group
+usermod -aG sudo $username
+
+# # create .ssh directory
+mkdir /home/$username/.ssh
+
+# # change ownership of .ssh directory
+chown $username:$username /home/$username/.ssh
+
+# # add public key to authorized_keys
 echo $publickey >> /home/$username/.ssh/authorized_keys
 
-# change ownership of authorized_keys
+# # change ownership of authorized_keys
 chown $username:$username /home/$username/.ssh/authorized_keys
 
-echo "User created successfully."
+echo -e "\e[32mUser created successfully.\e[0m"
+
+# ip address of the server
+ipaddress=`hostname -I | awk '{print $1}'`
+
+echo -e "\e[33mLogin with: ssh $username@$ipaddress\e[0m"
