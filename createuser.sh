@@ -9,8 +9,6 @@ if [ $(id -u) -ne 0 ]; then
     exit 1
 fi
 
-echo "You are Root"
-
 # ask for username
 read -p "Enter username: " username
 
