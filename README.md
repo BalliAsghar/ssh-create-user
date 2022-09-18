@@ -7,3 +7,7 @@ curl https://raw.githubusercontent.com/BalliAsghar/ssh-create-user/main/createus
 chmod +x createuser.sh
 ./createuser.sh
 ```
+
+# Requirements
+
+- Curl
